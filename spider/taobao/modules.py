@@ -24,14 +24,15 @@ def keywords_reader(excel):
 	"""
 
 def cookie_replace(cookies_list, old_cookies):
-	"""
-	一个 cookie 爬 100 个关键字就更换另一个 cookie
-	:param cookies_list:
-	:return:
-	"""
-	new_cookies = cookies_list.pop()
-	cookies_list.append(old_cookies)
-	return new_cookies
+	# """
+	# 一个 cookie 爬 100 个关键字就更换另一个 cookie
+	# :param cookies_list:
+	# :return:
+	# """
+	# new_cookies = cookies_list.pop()
+	# cookies_list.append(old_cookies)
+	# return new_cookies
+	pass
 
 def excel_spilt(excel):
 	"""
