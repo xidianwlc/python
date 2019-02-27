@@ -2,12 +2,13 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   core.py
+@Desc    :   核心模块：搜索、下载、Cookies
 @Contact :   thefreer@outlook.com
 @License :   (C)Copyright 2018-2019, TheFreer.NET
 @WebSite :   www.thefreer.net
-@Modify Time      @Author    @Version    @Desciption
-------------      -------    --------    -----------
-2019/2/27 17:20   thefreer      1.0         核心模块：搜索、下载、Cookies
+@Modify Time      @Author    @Version
+------------      -------    --------
+2019/2/27 17:20   thefreer      1.0
 '''
 import requests
 import re
