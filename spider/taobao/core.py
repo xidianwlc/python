@@ -3,7 +3,7 @@
 '''
 @File    :   core.py
 @Contact :   thefreer@outlook.com
-@License :   (C)Copyright 2018-2019, Liugroup-NLPR-CASIA
+@License :   (C)Copyright 2018-2019, TheFreer.NET
 @WebSite :   www.thefreer.net
 @Modify Time      @Author    @Version    @Desciption
 ------------      -------    --------    -----------
