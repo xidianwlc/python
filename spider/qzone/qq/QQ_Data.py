@@ -196,76 +196,75 @@ class get_Data():
 
 
 #将好友信息存起来
-	def informations(self,informations_Dict):
+	def informations(self, informations_Dict):
 		informations_url = 'https://h5.qzone.qq.com/proxy/domain/base.qzone.qq.com/cgi-bin/user/cgi_userinfo_get_all?uin=' + str(self.fri_id) + '&vuin=' + str(self.usr) + '&fupdate=1&g_tk=' + str(self.g_tk)
-	    r = self.session.get(informations_url)
-	    text = r.text
-	    text = text[10:-3]
-	    js = json.loads(text)
-	    print('informations_url:	' + informations_url)
-	    #print('QQ:  ' + fri_id + '  详细信息如下:  ' + text)
-	    control = js['message']
-	    if control == '获取成功':
-	        i = 0
-	        informations_data = js['data']
-	        uin = informations_data['uin']#--QQ号
-	        nickname = informations_data['nickname']#--昵称
-	        spacename = informations_data['spacename']#--空间昵称
-	        desc = informations_data['desc']#--描述
-	        signature = informations_data['signature']#--签名
-	        sex_select = informations_data['sex']#--性别-1-男,2-女
-	        if sex_select == 1:
-	            sex = '男'
-	        elif sex_select == 2:
-	            sex = '女'
-	        else:
-	            sex = '不明'
-	        age = informations_data['age']#--年龄周岁
-	        birthyear = informations_data['birthyear']#--出生年份
-	        birthday = informations_data['birthday']#--出生日期
-	        birth = str(birthyear) + '-' + str(birthday)#--出生年月日
-	        blood = informations_data['bloodtype']#--血型--1-A,2-B,3-O,4-AB,5-其他
-	        if blood == 1:
-	            bloodtype = 'A'
-	        elif blood == 2:
-	            bloodtype = 'B'
-	        elif blood == 3:
-	            bloodtype = 'O'
-	        elif blood == 4:
-	            bloodtype = 'AB'
-	        else:
-	            bloodtype = '其他'
-	        address_now = informations_data['country'] + '-' + informations_data['province'] + '-' + informations_data['city']#现居地
-	        address__past = informations_data['hco'] + '-' + informations_data['hp'] + '-' + informations_data['hc']#故居
-	        marriage_select = informations_data['marriage']#--感情状况--0-None,1-单身,2-恋爱中,3-已订婚,4-已婚,5-分居,6-离异,7-保密
-	        if marriage_select == 0:
-	            marriage = '不明'
-	        elif marriage_select == 1:
-	            marriage = '单身'
-	        elif marriage_select == 2:
-	            marriage = '恋爱中'
-	        elif marriage_select == 3:
-	            marriage = '已订婚'
-	        elif marriage_select == 4:
-	            marriage = '已婚'
-	        elif marriage_select == 5:
-	            marriage = '分居'
-	        elif marriage_select == 6:
-	            marriage = '离异'
-	        elif marriage_select == 7:
-	            marriage = '保密'
-	        else:
-	            marriage = '不明'
-	        company = informations_data['company']#--公司
-	        #ptimestamp = informations_data['ptimestamp']#--时间戳
-	        informations_desc = ['昵称/备注','空间昵称','空间描述','个性签名','性别','年龄(周岁)','出生年月日','血型','现居地','故居','感情状况','公司']
-	        n = len(informations_desc)
-	        informations_List = [nickname,filter_tags(spacename),filter_tags(desc),filter_tags(signature),sex,age,birth,bloodtype,address_now,address__past,marriage,company]
-	        informations_Dict[self.fri_id] = informations_List
-	        print(informations_Dict)
-	        print('QQ号为:  ' + str(self.fri_id) + '的好友详细信息如下:')
-	        for i in range(0,n):
-	            print(informations_desc[i] + ': ' + str(informations_List[i]))
-
-	    else:
-	        print('权限不足,无法获取好友信息')
+		r = self.session.get(informations_url)
+		text = r.text
+		text = text[10:-3]
+		js = json.loads(text)
+		print('informations_url:	' + informations_url)
+		#print('QQ:  ' + fri_id + '  详细信息如下:  ' + text)
+		control = js['message']
+		if control == '获取成功':
+			i = 0
+			informations_data = js['data']
+			uin = informations_data['uin']#--QQ号
+			nickname = informations_data['nickname']#--昵称
+			spacename = informations_data['spacename']#--空间昵称
+			desc = informations_data['desc']#--描述
+			signature = informations_data['signature']#--签名
+			sex_select = informations_data['sex']#--性别-1-男,2-女
+			if sex_select == 1:
+				sex = '男'
+			elif sex_select == 2:
+				sex = '女'
+			else:
+				sex = '不明'
+			age = informations_data['age']#--年龄周岁
+			birthyear = informations_data['birthyear']#--出生年份
+			birthday = informations_data['birthday']#--出生日期
+			birth = str(birthyear) + '-' + str(birthday)#--出生年月日
+			blood = informations_data['bloodtype']#--血型--1-A,2-B,3-O,4-AB,5-其他
+			if blood == 1:
+				bloodtype = 'A'
+			elif blood == 2:
+				bloodtype = 'B'
+			elif blood == 3:
+				bloodtype = 'O'
+			elif blood == 4:
+				bloodtype = 'AB'
+			else:
+				bloodtype = '其他'
+			address_now = informations_data['country'] + '-' + informations_data['province'] + '-' + informations_data['city']#现居地
+			address__past = informations_data['hco'] + '-' + informations_data['hp'] + '-' + informations_data['hc']#故居
+			marriage_select = informations_data['marriage']#--感情状况--0-None,1-单身,2-恋爱中,3-已订婚,4-已婚,5-分居,6-离异,7-保密
+			if marriage_select == 0:
+				marriage = '不明'
+			elif marriage_select == 1:
+				marriage = '单身'
+			elif marriage_select == 2:
+				marriage = '恋爱中'
+			elif marriage_select == 3:
+				marriage = '已订婚'
+			elif marriage_select == 4:
+				marriage = '已婚'
+			elif marriage_select == 5:
+				marriage = '分居'
+			elif marriage_select == 6:
+				marriage = '离异'
+			elif marriage_select == 7:
+				marriage = '保密'
+			else:
+				marriage = '不明'
+			company = informations_data['company']#--公司
+			#ptimestamp = informations_data['ptimestamp']#--时间戳
+			informations_desc = ['昵称/备注','空间昵称','空间描述','个性签名','性别','年龄(周岁)','出生年月日','血型','现居地','故居','感情状况','公司']
+			n = len(informations_desc)
+			informations_List = [nickname,filter_tags(spacename),filter_tags(desc),filter_tags(signature),sex,age,birth,bloodtype,address_now,address__past,marriage,company]
+			informations_Dict[self.fri_id] = informations_List
+			print(informations_Dict)
+			print('QQ号为:  ' + str(self.fri_id) + '的好友详细信息如下:')
+			for i in range(0,n):
+				print(informations_desc[i] + ': ' + str(informations_List[i]))
+		else:
+			print('权限不足,无法获取好友信息')
