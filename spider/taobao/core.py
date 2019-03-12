@@ -12,71 +12,15 @@
 '''
 import requests
 import re
-import os
 import json
 from urllib import parse
+import time
+import pandas as pd
+from modules import sleepRandom
 import asyncio
+from retrying import retry  #设置重试次数用的
 import random
 from pyppeteer.launcher import launch  # 控制模拟浏览器用
-from retrying import retry  #设置重试次数用的
-
-class Searcher():
-    def __init__(self, url):
-        """
-		搜索，得到商品列表
-		"""
-        ## cookie 和浏览器 UA 是绑定的
-        self.headers = {
-            "Cookie": "",
-            # "Referer": "https://s.taobao.com/search/_____tmd_____/verify/",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0",
-            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9 Safari/537.36",
-        }
-        self.url = url
-
-    def list_parser(self, cookies):
-        """
-        获取商品列表
-        :param cookie:
-        :return:
-        """
-        headers = self.headers
-        headers["Cookie"] = cookies
-        url = self.url
-        try:
-            resp = requests.get(url, headers=headers)
-        except:
-            return []
-        html = resp.text
-        # print(html)
-        page_config = re.findall("g_page_config = {(.*)}", html)
-        if len(page_config) != 0:
-            js = json.loads("{" + page_config[0] + "}")
-            good_list = js['mods']['itemlist']['data']['auctions']
-            return good_list
-        else:
-            return []
-
-    def get_data(self, cookies):
-        """
-		返回待存入表格的数据
-		:return:
-		"""
-        good_list = self.list_parser(cookies=cookies)
-        goods = []
-        if len(good_list) >= 10:
-            count = 10
-        else:
-            count = len(good_list)
-        for i in range(0, count):
-            g = good_list[i]
-            # print("===================")
-            title = g['raw_title']
-            price = g['view_price']
-            sales = g['view_sales']
-            detail = g['detail_url']
-            goods.append((title, price, sales, detail))
-        return goods
 
 
 class Downloader():
@@ -224,12 +168,12 @@ class Cookier():
             page = await self.mouse_slide(page=page)  # js拉动滑块过去。
             await page.reload()
             self.rtn_cookies = await self.get_cookies(page)  # 导出cookie 完成登陆后就可以拿着cookie玩各种各样的事情了。
-            # await page.close()
-            return self.rtn_cookies, await page.content()
-        else:
-            print("当前页面未出现滑块")
-            self.flag = 1
-            return self.flag
+            print(self.rtn_cookies)
+            return self.rtn_cookies
+        # else:
+        #     print("当前页面未出现滑块")
+        #     self.flag = 1
+        #     return self.flag
 
     async def get_cookies(self, page):
         """
@@ -248,15 +192,14 @@ class Cookier():
                 cookies += str_cookie
             else:
                 pass
-        rtn_cookies = "; " + cookies
+        rtn_cookies = cookies
         # print(cookies)
         return rtn_cookies
 
     def retry_if_result_none(result):
         return result is None
 
-    @retry(
-        retry_on_result=retry_if_result_none, )
+    @retry(retry_on_result=retry_if_result_none, )
     async def mouse_slide(self, page=None):
         """
 		鼠标移动到滑块，按下，滑动到头（然后延时处理），松开按键
@@ -273,34 +216,99 @@ class Cookier():
         await page.mouse.up()
         return page
 
+class Searcher():
+    def __init__(self, url, db, cursor):
+        """
+		搜索，得到商品列表
+		"""
+        ## cookie 和浏览器 UA 是绑定的
+        self.headers = {
+            # "Referer": "https://s.taobao.com/search/_____tmd_____/verify/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0",
+            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9 Safari/537.36",
+        }
+        self.url = url
+        self.db = db
+        self.cursor = cursor
 
-if __name__ == "__main__":
+    def list_parser(self, cookies):
+        """
+        获取商品列表
+        :param cookie:
+        :return:
+        """
+        sleepRandom(4)
+        headers = self.headers
+        headers["Cookie"] = cookies
+        url = self.url
+        try:
+            resp = requests.get(url, headers=headers)
+        except:
+            return []
+        html = resp.text
+        page_config = re.findall("g_page_config = {(.*)}", html)
+        if len(page_config) != 0:
+            js = json.loads("{" + page_config[0] + "}")
+            good_list = js['mods']['itemlist']['data']['auctions']
+            return good_list
+        else:
+            return []
 
-    # os.makedirs('./taobao', exist_ok=True)#总文件夹
-    # url = "https://detail.tmall.com/item.htm?spm=a230r.1.14.25.833b388cUyP4PV&id=583768211707&ns=1&abbucket=6"
-    # name = "ceshi"
-    # tb_downloader = downloader()
-    # os.makedirs('./taobao/%s'% str(name), exist_ok=True)#为每个id创建图片文件夹
-    # # inventory = tb_downloader.down_controler(url,name)
-    # tb_downloader.down_controler(url, name)
-    # print('本链接爬取完成, 图片下载完毕')
+    def get_data(self, cookies):
+        """
+		返回待存入表格的数据
+		:return:
+		"""
+        good_list = self.list_parser(cookies=cookies)
+        if len(good_list) >= 3:
+            c = 3
+        else:
+            c = len(good_list)
+        goods = {}
+        for i in range(0, c):
+            time.sleep(2)
+            g = good_list[i]
+            title = g['raw_title'].replace(r"'", "").replace(r'"', '')
+            price = g['view_price'].replace(r"'", "").replace(r'"', '')
+            sales = g['view_sales'].replace(r"'", "").replace(r'"', '')
+            detail = g['detail_url'].replace(r"'", "").replace(r'"', '')
+            print(title)
+            item_id = re.search(r"id=(.*?)&", detail).groups()[0]
 
-    os.makedirs('./taobao', exist_ok=True)  #总文件夹
-    tb_downloader = Downloader()
-    tb_searcher = Searcher()
-    keyword = parse.quote("三星 液晶电视 电源板")
-    with open('sec_data/cookies.txt', 'r') as c:
-        cookie = c.readline()
-    for i in range(10):
-        goods = tb_searcher.get_data(cookie, keyword)
-        print(goods)
-        print(len(goods))
-    # i = 0
-    # for g in goods:
-    #     i += 1
-    #     url = "https:" +g[3]
-    #     name = g[0]
-    #     os.makedirs('./taobao/%s_%s'% (str(i), str(name)), exist_ok = True)  # 为每个id创建图片文件夹
-    #     # inventory = tb_downloader.down_controler(url,name)
-    #     tb_downloader.down_controler(url, name, i)
-    #     print('本链接爬取完成, 图片下载完毕')
+            sell_id = re.split(r"=", g['shopLink'])[1]
+            detail_skip_url = "https://detailskip.taobao.com/service/getData/1/p1/item/detail/sib.htm?itemId=%s&sellerId=%s&modules=dynStock,qrcode,viewer,price,duty,xmpPromotion,delivery,activity,fqg,zjys,couponActivity,soldQuantity,originalPrice,tradeContract&callback=onSibRequestSuccess"%(item_id, sell_id)
+            count = str(self.get_count(detail_skip_url))
+            goods = {
+                "产品名称": title,
+                "价格": price,
+                "销量": sales,
+                "库存": count,
+                "产品链接": detail,
+            }
+            self.cursor.execute(
+                "insert into taobao (产品名称,价格,销量,库存,产品链接) values(%s,%s,%s,%s,%s)",
+                (title, price, sales, count, detail))
+            self.db.commit()
+        return goods, self.db, self.cursor
+    
+    def get_count(self, url):
+        headers = self.headers
+        headers['Referer'] = "https://item.taobao.com/item.htm"
+        html = requests.get(url, headers=headers).text.replace('onSibRequestSuccess(', '').replace(');', '')
+        js = json.loads(html)
+        count = js["data"]["dynStock"]["sellableQuantity"]
+        return count
+
+if __name__ == '__main__':
+    keyword = parse.quote("三星 液晶电视 主板")
+    url = "https://s.taobao.com/search?q=%s&sort=sale-desc" % keyword
+    with open('sec_data/cookies.txt', 'r') as f:
+        cookies = f.readline()
+    searchr = Searcher(url=url)
+    goods = searchr.get_data(cookies)
+    print(goods)
+    df = pd.DataFrame.from_dict(goods)
+    df.to_excel("./out_data/excels/0.xls")
+    
+    
+    
