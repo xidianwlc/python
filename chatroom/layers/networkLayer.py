@@ -5,7 +5,6 @@
 # @Last Modified time: 2019-01-04 15:21:12
 import random
 from tools import binExtend, crc
-
 class networkLayer(object):
 	"""
 	networkLayer:ip package ipv4
