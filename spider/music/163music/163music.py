@@ -15,7 +15,7 @@ headers = {
     'application/x-www-form-urlencoded',
 }
 post_url = 'https://music.163.com/weapi/song/enhance/player/url'
-content = {"ids": "", "br": 640000, "csrf_token": ""}
+content = {"ids": "", "br": 999000, "csrf_token": ""}
 key1 = b'0CoJUm6Qyw8W8jud'
 key2 = b'ryPnuAVT5RtiIWNi'
 encSecKey = 'a71973af53caae445b554150da52e75ba5687609d28013aacea03e9ef07169560f156ca76be9ac8df7bb204e05b864756aa3dd2274a65d5be964f118f6d075006695059e10cdcc806306e9a5f2f36f5bf0379f511cd13a600a6cc7031c814583863ea84d3373dea69f74354cd2dc3af61d58eeb43b1de06f588ef361ebc1eed6'
@@ -27,7 +27,11 @@ encrypt_token = lambda key, content: AES.new(key=key, mode=AES.MODE_CBC, IV=b'01
 
 # 接口
 def music_interface(base_url):
-    song_id = re.search(r'/(\d+?)/', base_url).groups()[0]
+    try:
+        song_id = re.search(r'/(\d+?)/', base_url).groups()[0]
+    except:
+        song_id = re.search(r'id=(.*?)&', base_url).groups()[0]
+    print(song_id)
     content["ids"] = "[{}]".format(song_id)
     str_content = json.dumps(content)
     tmp = base64.b64encode(encrypt_token(key1, str_content)).decode()
@@ -53,7 +57,7 @@ def download(url):
 
 if __name__ == '__main__':
     # 输入你要下载歌曲的ID，假如想下载一整个音乐列表，那么请自行修改代码，理论上歌曲无论免费还是VIP专享，只要能听的都可以下载
-    base_url = "分享Relient K/Owl City/Adam Young的单曲《That's My Jam》\: http://music.163.com/song/31717027/?userid=410379629 (来自@网易云音乐)"
+    base_url = "分享Charlie Puth的单曲《How Long》:?http://music.163.com/song/509728806/?userid=410379629?(来自@网易云音乐)"
 
     song_url = music_interface(base_url)
     print(song_url)
