@@ -6,6 +6,7 @@ from QQ_cookie import Cookie
 from QQ_friend import fri_list
 from QQ_Data import get_Data
 from QQ_Processing import get_wordcloud,jieba
+import requests
 
 #用户命令存进列表,也可以输入一个命令,执行一条
 def usr_cmd():
@@ -29,42 +30,39 @@ def usr_cmd():
     return cmdList
 
 #自动化登录QQ空间,前几次登录有时需要人工输入验证码,如果来不及输完,可以将time.sleep改为20
-def begin(usr,pwd):
-    try:
-        driver = webdriver.Chrome()#实例化出一个Firefox浏览器
-        driver.set_window_position(20, 40)#设置浏览器窗口的位置和大小
-        driver.set_window_size(1100,700)
-        driver.get('https://user.qzone.qq.com/')#打开一个页面（QQ空间登录页）
-        '''
-        click()方法对于一些标签不是<button>、<a>的按钮无效，
-        而QQ空间触屏版中的按钮大多数都不是<button>标签，
-        例如”继续打开触屏版”为<b>标签，“登录”为<div>标签。
-        所以在调用FireFox等浏览器中直接click()的方式不行，
-        可以看到,登录表单在页面的框架中，所以要切换到该框架
-        '''
-        driver.switch_to_frame('login_frame')
-        #通过使用选择器选择到表单元素进行模拟输入和点击按钮提交 
-        driver.find_element_by_id('switcher_plogin').click()#模拟登陆过程
-        qq = driver.find_element_by_id('u')
-        qq.clear()
-        qq.send_keys(usr)
-        password = driver.find_element_by_id('p')
-        password.clear()
-        password.send_keys(pwd)
-        driver.find_element_by_id('login_button').click()
-        time.sleep(5)
-
-        icookie = driver.get_cookies()    #得到原始cookie
-        html = driver.page_source        #得到页面html
-        driver.quit()   #退出浏览器
-
-    except:
-        print('呵~  自己qq密码都记不住吗?  还有,请不要尝试登录别人的qq哦~')
-
-    #从html中找到qzonetoken(很重要),为了得到qq的好友列表
-    xpat = r'window\.g_qzonetoken = \(function\(\)\{ try{return \"(.*)";'
-    qzonetoken = re.compile(xpat).findall(html)[0]
-    run(usr,icookie,qzonetoken)
+def begin(usr, pwd):
+    # try:
+    driver = webdriver.Firefox()#实例化出一个Firefox浏览器
+    driver.set_window_position(20, 40)#设置浏览器窗口的位置和大小
+    driver.set_window_size(1100,700)
+    driver.get('https://user.qzone.qq.com/')#打开一个页面（QQ空间登录页）
+    '''
+    click()方法对于一些标签不是<button>、<a>的按钮无效，
+    而QQ空间触屏版中的按钮大多数都不是<button>标签，
+    例如”继续打开触屏版”为<b>标签，“登录”为<div>标签。
+    所以在调用FireFox等浏览器中直接click()的方式不行，
+    可以看到,登录表单在页面的框架中，所以要切换到该框架
+    '''
+    driver.switch_to_frame('login_frame')
+    #通过使用选择器选择到表单元素进行模拟输入和点击按钮提交
+    driver.find_element_by_id('switcher_plogin').click()#模拟登陆过程
+    qq = driver.find_element_by_id('u')
+    qq.clear()
+    qq.send_keys(usr)
+    password = driver.find_element_by_id('p')
+    password.clear()
+    password.send_keys(pwd)
+    driver.find_element_by_id('login_button').click()
+    time.sleep(5)
+    # except:
+    #     print('呵~  自己qq密码都记不住吗?  还有,请不要尝试登录别人的qq哦~')
+    icookie = driver.get_cookies()    #得到原始cookie
+    script = 'console.log(window.g_qzonetoken);'
+    driver.execute_script(script)
+    print(list(driver.get_log('browser')))
+    qzonetoken = list(driver.get_log('browser'))[0]['message']
+    driver.quit()  # 退出浏览器
+    run(usr, icookie, qzonetoken)
 
 
 
