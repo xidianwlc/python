@@ -15,10 +15,11 @@ headers = {
 'Upgrade-Insecure-Requests':	1,
 'User-Agent':	'Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0',
 }
-def download(i):
-	filepath = '/home/huige/图片/7MX/7MX_第' + str(i + 1) + '页' 
-	os.makedirs(filepath, exist_ok = True)
-	url = 'http://api.7mx.com/media/category_recommend_list?line=' + str(i) + ',0,0&limit=40'
+def download(count, path):
+	path.replace(r"\\", "/")
+	filepath = path + '/' + str(count + 1)
+	os.makedirs(filepath, exist_ok=True)
+	url = 'http://api.7mx.com/media/category_recommend_list?line=' + str(count) + ',0,0&limit=40'
 	r = requests.get(url)
 	r.headers = headers
 	r.coding = 'utf-8'
@@ -27,32 +28,34 @@ def download(i):
 	data = j['data']
 	control = j['msg']
 	if control == '':
-		print('第 ' + str(i + 1) + '页下载开始')
+		print('第 ' + str(count + 1) + '页下载开始')
 		j = 1
 		for ID in data:
 			img_url = ID['image']
-			title = ID['title']
+			# title = ID['title']
 			image_height = ID['image_height']
 			image_width  = ID['image_width']
-			img_name = str(j) + '_' + title + '_ 长：' + image_width + ' - 宽：'+ image_height  + '.jpg'
-			r_name = re.compile('\/',re.M)
-			img_name = r_name.sub('-',img_name)
+			# img_name = str(j) + '_' + title + '_ 长：' + image_width + ' - 宽：' + image_height + '.jpg'
+			img_name = str(j) + '-' + image_width + '-' + image_height + '.jpg'
+			# r_name = re.compile('\/',re.M)
+			# img_name = r_name.sub('-',img_name)
 			res = requests.get(img_url)
 			res.headers = headers
-			f = open(filepath + '/%s' % img_name,'wb')
-			for chunk in res.iter_content(chunk_size = 20):
+			f = open(filepath + '/%s' % img_name, 'wb')
+			for chunk in res.iter_content(chunk_size=20):
 				f.write(chunk)
-			print('正在下载为: ',img_name,' 的第 ',j,' 张图片')
+			print('正在下载为: ', img_name, ' 的第 ', j, ' 张图片')
 			j = j+1
 			print('图片链接为:  ' + img_url)
-		print('第 ' + str(i + 1) + ' 页下载完成!')
+		print('第 ' + str(count + 1) + ' 页下载完成!')
 
 
 	else:
 		print('全部下载完成!')
 		sys.exit()
-		
-	return download(i+1)
+
+	return download(count+1, path)
 if __name__ == '__main__':
 	i = 0
-	download(i)
+	filepath = input("请输入图片保存地址：")
+	download(i, filepath)
